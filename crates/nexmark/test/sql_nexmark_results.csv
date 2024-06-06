@@ -1,0 +1,15 @@
+when,runner,mode,language,name,num_cores,num_events,elapsed
+2024-06-06 00:35:18,feldera,stream,sql,q0,16,1000000,2.3
+2024-06-06 00:35:18,feldera,stream,sql,q1,16,1000000,2.4
+2024-06-06 00:35:18,feldera,stream,sql,q2,16,1000000,2.0
+2024-06-06 00:35:18,feldera,stream,sql,q3,16,1000000,2.0
+2024-06-06 00:35:18,feldera,stream,sql,q4,16,1000000,2.4
+2024-06-06 00:35:18,feldera,stream,sql,q7,16,1000000,2.3
+2024-06-06 00:35:18,feldera,stream,sql,q8,16,1000000,2.0
+2024-06-06 00:35:18,feldera,stream,sql,q9,16,1000000,3.5
+2024-06-06 00:35:18,feldera,stream,sql,q10,16,1000000,2.8
+2024-06-06 00:35:18,feldera,stream,sql,q15,16,1000000,2.1
+2024-06-06 00:35:18,feldera,stream,sql,q17,16,1000000,2.1
+2024-06-06 00:35:18,feldera,stream,sql,q18,16,1000000,2.5
+2024-06-06 00:35:18,feldera,stream,sql,q19,16,1000000,2.8
+2024-06-06 00:35:18,feldera,stream,sql,q20,16,1000000,2.7
