@@ -34,6 +34,7 @@ install-deps:
     RUN sudo apt-get install nodejs -y
     RUN npm install --global yarn
     RUN npm install --global openapi-typescript-codegen
+    # Can add unzip/rpk here
 
 install-rust:
     FROM +install-deps
@@ -513,14 +514,42 @@ ui-playwright-tests:
     END
 
 benchmark:
-    FROM +build-nexmark
+    #FROM +build-nexmark
+    FROM +build-manager
+    # Clean these up and add them to a higher level
+    RUN apt install unzip -y
+    RUN apt install python3-requests -y
+    RUN arch=`dpkg --print-architecture`; \
+            curl -LO https://github.com/redpanda-data/redpanda/releases/latest/download/rpk-linux-$arch.zip \
+            && unzip rpk-linux-$arch.zip -d /bin/ \
+            && rpk version \
+            && rm rpk-linux-$arch.zip
     COPY scripts/bench.bash scripts/bench.bash
-
-    RUN bash scripts/bench.bash
+    COPY benchmark/feldera-sql/run.py benchmark/feldera-sql/run.py
+    COPY +build-manager/pipeline-manager .
+    COPY +build-sql/sql-to-dbsp-compiler sql-to-dbsp-compiler
+    RUN mkdir -p /working-dir/cargo_workspace
+    COPY Cargo.lock /working-dir/cargo_workspace/Cargo.lock
+    ENV PGHOST=localhost
+    ENV PGUSER=postgres
+    ENV PGCLIENTENCODING=UTF8
+    ENV PGPORT=5432
+    ENV RUST_LOG=error
+    ENV WITH_POSTGRES=1
+    ENV IN_CI=1
+    WITH DOCKER --pull postgres
+        RUN docker run --shm-size=512MB -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e PGDATA=/dev/shm -d postgres && \
+            sleep 10 && \
+            (./pipeline-manager --bind-address=0.0.0.0 --api-server-working-directory=/working-dir --compiler-working-directory=/working-dir --runner-working-directory=/working-dir --sql-compiler-home=/dbsp/sql-to-dbsp-compiler --dbsp-override-path=/dbsp --db-connection-string=postgresql://postgres:postgres@localhost:5432 --compilation-profile=optimized &) && \
+            sleep 5 && \
+            docker run --name redpanda -p 9092:9092 --rm -itd docker.redpanda.com/vectorized/redpanda:v23.2.3 redpanda start --smp 2 \
+            && bash scripts/bench.bash
+    END
     SAVE ARTIFACT crates/nexmark/nexmark_results.csv AS LOCAL .
     SAVE ARTIFACT crates/nexmark/sql_nexmark_results.csv AS LOCAL .
     SAVE ARTIFACT crates/nexmark/dram_nexmark_results.csv AS LOCAL .
     SAVE ARTIFACT crates/dbsp/galen_results.csv AS LOCAL .
+
     #SAVE ARTIFACT crates/dbsp/ldbc_results.csv AS LOCAL .
 
 all-tests:
