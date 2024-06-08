@@ -34,7 +34,13 @@ install-deps:
     RUN sudo apt-get install nodejs -y
     RUN npm install --global yarn
     RUN npm install --global openapi-typescript-codegen
-    # Can add unzip/rpk here
+    RUN apt install unzip -y
+    RUN apt install python3-requests -y
+    RUN arch=`dpkg --print-architecture`; \
+            curl -LO https://github.com/redpanda-data/redpanda/releases/latest/download/rpk-linux-$arch.zip \
+            && unzip rpk-linux-$arch.zip -d /bin/ \
+            && rpk version \
+            && rm rpk-linux-$arch.zip
 
 install-rust:
     FROM +install-deps
@@ -514,16 +520,7 @@ ui-playwright-tests:
     END
 
 benchmark:
-    #FROM +build-nexmark
     FROM +build-manager
-    # Clean these up and add them to a higher level
-    RUN apt install unzip -y
-    RUN apt install python3-requests -y
-    RUN arch=`dpkg --print-architecture`; \
-            curl -LO https://github.com/redpanda-data/redpanda/releases/latest/download/rpk-linux-$arch.zip \
-            && unzip rpk-linux-$arch.zip -d /bin/ \
-            && rpk version \
-            && rm rpk-linux-$arch.zip
     COPY scripts/bench.bash scripts/bench.bash
     COPY benchmark/feldera-sql/run.py benchmark/feldera-sql/run.py
     COPY +build-manager/pipeline-manager .
@@ -549,7 +546,6 @@ benchmark:
     SAVE ARTIFACT crates/nexmark/sql_nexmark_results.csv AS LOCAL .
     SAVE ARTIFACT crates/nexmark/dram_nexmark_results.csv AS LOCAL .
     SAVE ARTIFACT crates/dbsp/galen_results.csv AS LOCAL .
-
     #SAVE ARTIFACT crates/dbsp/ldbc_results.csv AS LOCAL .
 
 all-tests:
