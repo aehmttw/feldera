@@ -1,15 +1,25 @@
--- Unsupported features for this query
---   ORDER BY (ignored)
---   LIMIT    (ignored)
---   INTERVAL (inlined into constant)
-
-CREATE VIEW q4 AS SELECT o.orderpriority, COUNT(*) AS order_count
-FROM   orders o
-WHERE  o.orderdate >= DATE('1993-07-01')
-  AND  o.orderdate <  DATE('1993-10-01')
-  AND (EXISTS (
-    SELECT * FROM lineitem l
-    WHERE l.orderkey = o.orderkey
-      AND l.commitdate < l.receiptdate
-  ))
-GROUP BY o.orderpriority;
+create view q4 (
+    o_orderpriority,
+    order_count
+) as
+select
+    o_orderpriority,
+    count(*) as order_count
+from
+    orders
+where
+    o_orderdate >= date '1997-07-01'
+    and o_orderdate < date '1997-07-01' + interval '3' month
+    and exists (
+        select
+            *
+        from
+            lineitem
+        where
+            l_orderkey = o_orderkey
+            and l_commitdate < l_receiptdate
+    )
+group by
+    o_orderpriority
+order by
+    o_orderpriority;

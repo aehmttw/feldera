@@ -1,21 +1,44 @@
--- Unsupported features for this query
--- ORDER BY (ignored)
--- LIMIT    (ignored)
-
-CREATE VIEW q21 AS SELECT  s.name, COUNT(*) AS numwait
-FROM    supplier s, lineitem l1, orders o, nation n
-WHERE   s.suppkey = l1.suppkey
-  AND   o.orderkey = l1.orderkey
-  AND   o.orderstatus = 'F'
-  AND   l1.receiptdate > l1.commitdate
-  AND   (EXISTS (SELECT * FROM lineitem l2 
-                 WHERE l2.orderkey = l1.orderkey
-                   AND l2.suppkey <> l1.suppkey))
-  AND   (NOT EXISTS (SELECT * FROM lineitem l3
-                     WHERE  l3.orderkey = l1.orderkey
-                       AND  l3.suppkey <> l1.suppkey
-                       AND  l3.receiptdate > l3.commitdate))
-  AND   s.nationkey = n.nationkey
-  AND   n.name = 'SAUDI ARABIA'
-GROUP BY s.name;
-          
+create view q21 (
+    s_name,
+    numwait
+) as
+select
+    s_name,
+    count(*) as numwait
+from
+    supplier,
+    lineitem l1,
+    orders,
+    nation
+where
+    s_suppkey = l1.l_suppkey
+    and o_orderkey = l1.l_orderkey
+    and o_orderstatus = 'F'
+    and l1.l_receiptdate > l1.l_commitdate
+    and exists (
+        select
+            *
+        from
+            lineitem l2
+        where
+            l2.l_orderkey = l1.l_orderkey
+            and l2.l_suppkey <> l1.l_suppkey
+    )
+    and not exists (
+        select
+            *
+        from
+            lineitem l3
+        where
+            l3.l_orderkey = l1.l_orderkey
+            and l3.l_suppkey <> l1.l_suppkey
+            and l3.l_receiptdate > l3.l_commitdate
+    )
+    and s_nationkey = n_nationkey
+    and n_name = 'GERMANY'
+group by
+    s_name
+order by
+    numwait desc,
+    s_name
+LIMIT 100;

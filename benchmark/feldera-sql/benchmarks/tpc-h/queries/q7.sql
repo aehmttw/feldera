@@ -1,23 +1,45 @@
--- Unsupported features for this query
---   ORDER BY (ignored)
-
-CREATE VIEW q7 AS SELECT supp_nation, cust_nation, l_year, SUM(volume) as revenue
-FROM (
-  SELECT n1.name AS supp_nation,
-         n2.name AS cust_nation,
-         (DATE_PART(year, l.shipdate)) AS l_year,
-         l.extendedprice * (1 - l.discount) AS volume
-  FROM supplier s, lineitem l, orders o, customer c, nation n1, nation n2
-  WHERE s.suppkey = l.suppkey
-    AND o.orderkey = l.orderkey
-    AND c.custkey = o.custkey
-    AND s.nationkey = n1.nationkey 
-    AND c.nationkey = n2.nationkey 
-    AND (
-      (n1.name = 'FRANCE' and n2.name = 'GERMANY') 
-        OR
-      (n1.name = 'GERMANY' and n2.name = 'FRANCE')
-    )
-    AND (l.shipdate BETWEEN DATE('1995-01-01') AND DATE('1996-12-31') )
-  ) AS shipping
-GROUP BY supp_nation, cust_nation, l_year;
+create view q7 (
+    supp_nation,
+    cust_nation,
+    l_year,
+    revenue
+) as
+select
+    supp_nation,
+    cust_nation,
+    l_year,
+    sum(volume) as revenue
+from
+    (
+        select
+            n1.n_name as supp_nation,
+            n2.n_name as cust_nation,
+            extract(year from l_shipdate) as l_year,
+            l_extendedprice * (1 - l_discount) as volume
+        from
+            supplier,
+            lineitem,
+            orders,
+            customer,
+            nation n1,
+            nation n2
+        where
+            s_suppkey = l_suppkey
+            and o_orderkey = l_orderkey
+            and c_custkey = o_custkey
+            and s_nationkey = n1.n_nationkey
+            and c_nationkey = n2.n_nationkey
+            and (
+                (n1.n_name = 'ROMANIA' and n2.n_name = 'INDIA')
+                or (n1.n_name = 'INDIA' and n2.n_name = 'ROMANIA')
+            )
+            and l_shipdate between date '1995-01-01' and date '1996-12-31'
+    ) as shipping
+group by
+    supp_nation,
+    cust_nation,
+    l_year
+order by
+    supp_nation,
+    cust_nation,
+    l_year;

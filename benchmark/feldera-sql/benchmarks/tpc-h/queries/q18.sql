@@ -1,18 +1,41 @@
--- Unsupported features for this query
---   ORDER BY (ignored)
---   HAVING (rewritten as a nested query)
-
-
-CREATE VIEW q18 AS SELECT c.name, c.custkey, o.orderkey, o.orderdate, o.totalprice, 
-       sum(l.quantity) AS query18
-FROM customer c, orders o, lineitem l
-WHERE o.orderkey IN 
-  ( SELECT l3.orderkey FROM (
-      SELECT l2.orderkey, SUM(l2.quantity) AS QTY 
-      FROM lineitem l2 GROUP BY l2.orderkey 
-    ) l3
-    WHERE QTY > 100
-  )
- AND c.custkey = o.custkey
- AND o.orderkey = l.orderkey
-GROUP BY c.name, c.custkey, o.orderkey, o.orderdate, o.totalprice;
+create view q18 (
+    c_name,
+    c_custkey,
+    o_orderkey,
+    o_orderdate,
+    o_totalprice,
+    sum_quantity
+) as
+select
+    c_name,
+    c_custkey,
+    o_orderkey,
+    o_orderdate,
+    o_totalprice,
+    sum(l_quantity) as sum_quantity
+from
+    customer,
+    orders,
+    lineitem
+where
+    o_orderkey in (
+        select
+            l_orderkey
+        from
+            lineitem
+        group by
+            l_orderkey having
+                sum(l_quantity) > 313
+    )
+    and c_custkey = o_custkey
+    and o_orderkey = l_orderkey
+group by
+    c_name,
+    c_custkey,
+    o_orderkey,
+    o_orderdate,
+    o_totalprice
+order by
+    o_totalprice desc,
+    o_orderdate
+LIMIT 100;

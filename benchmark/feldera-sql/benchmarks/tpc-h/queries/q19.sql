@@ -1,32 +1,38 @@
-CREATE VIEW q19 AS SELECT SUM(l.extendedprice * (1 - l.discount) ) AS revenue
-FROM lineitem l, part p
-WHERE
+create view q19 (
+    revenue
+) as
+select
+    sum(l_extendedprice* (1 - l_discount)) as revenue
+from
+    lineitem,
+    part
+where
     (
-        p.partkey = l.partkey
-        AND p.brand = 'Brand#12'
-        AND ( p.container IN ( 'SM CASE', 'SM BOX', 'SM PACK', 'SM PKG') )
-        AND l.quantity >= 1 AND l.quantity <= 1 + 10 
-        AND ( p.size BETWEEN 1 AND 5 )
-        AND (l.shipmode IN ('AIR', 'AIR REG') )
-        AND l.shipinstruct = 'DELIVER IN PERSON' 
+        p_partkey = l_partkey
+        and p_brand = 'Brand#22'
+        and p_container in ('SM CASE', 'SM BOX', 'SM PACK', 'SM PKG')
+        and l_quantity >= 8 and l_quantity <= 8 + 10
+        and p_size between 1 and 5
+        and l_shipmode in ('AIR', 'AIR REG')
+        and l_shipinstruct = 'DELIVER IN PERSON'
     )
-    OR 
+    or
     (
-        p.partkey = l.partkey
-        AND p.brand = 'Brand#23'
-        AND ( p.container IN ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK') )
-        AND l.quantity >= 10 AND l.quantity <= 10 + 10
-        AND ( p.size BETWEEN 1 AND 10 )
-        AND ( l.shipmode IN ('AIR', 'AIR REG') )
-        AND l.shipinstruct = 'DELIVER IN PERSON'
+        p_partkey = l_partkey
+        and p_brand = 'Brand#23'
+        and p_container in ('MED BAG', 'MED BOX', 'MED PKG', 'MED PACK')
+        and l_quantity >= 10 and l_quantity <= 10 + 10
+        and p_size between 1 and 10
+        and l_shipmode in ('AIR', 'AIR REG')
+        and l_shipinstruct = 'DELIVER IN PERSON'
     )
-    OR 
+    or
     (
-        p.partkey = l.partkey
-        AND p.brand = 'Brand#34'
-        AND ( p.container IN ( 'LG CASE', 'LG BOX', 'LG PACK', 'LG PKG') )
-        AND l.quantity >= 20 AND l.quantity <= 20 + 10
-        AND ( p.size BETWEEN 1 AND 15 )
-        AND ( l.shipmode IN ('AIR', 'AIR REG') )
-        AND l.shipinstruct = 'DELIVER IN PERSON'
+        p_partkey = l_partkey
+        and p_brand = 'Brand#12'
+        and p_container in ('LG CASE', 'LG BOX', 'LG PACK', 'LG PKG')
+        and l_quantity >= 24 and l_quantity <= 24 + 10
+        and p_size between 1 and 15
+        and l_shipmode in ('AIR', 'AIR REG')
+        and l_shipinstruct = 'DELIVER IN PERSON'
     );

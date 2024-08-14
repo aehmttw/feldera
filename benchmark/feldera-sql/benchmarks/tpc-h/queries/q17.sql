@@ -1,10 +1,20 @@
-CREATE VIEW q17 AS SELECT SUM(l.extendedprice) / 7.0 AS avg_yearly
-FROM   lineitem l, part p
-WHERE  p.partkey = l.partkey
-  AND  p.brand = 'Brand#23'
-  AND  p.container = 'MED BOX'
-  AND  l.quantity < (
-          SELECT 0.2 * AVG(l2.quantity)
-          FROM lineitem l2
-          WHERE l2.partkey = p.partkey
-       )
+create view q17 (
+    avg_yearly
+) as
+select
+    sum(l_extendedprice) / 7.0 as avg_yearly
+from
+    lineitem,
+    part
+where
+    p_partkey = l_partkey
+    and p_brand = 'Brand#52'
+    and p_container = 'LG CAN'
+    and l_quantity < (
+        select
+            0.2 * avg(l_quantity)
+        from
+            lineitem
+        where
+            l_partkey = p_partkey
+    );

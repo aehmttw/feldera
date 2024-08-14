@@ -1,15 +1,29 @@
--- Unsupported features for this query
---   ORDER BY (ignored)
---   LIMIT    (ignored)
-
-CREATE VIEW q3 AS SELECT ORDERS.orderkey, 
-       ORDERS.orderdate,
-       ORDERS.shippriority,
-       SUM(extendedprice * (1 - discount)) AS query3
-FROM   CUSTOMER, ORDERS, LINEITEM
-WHERE  CUSTOMER.mktsegment = 'BUILDING'
-  AND  ORDERS.custkey = CUSTOMER.custkey
-  AND  LINEITEM.orderkey = ORDERS.orderkey
-  AND  ORDERS.orderdate < DATE('1995-03-15')
-  AND  LINEITEM.shipdate > DATE('1995-03-15')
-GROUP BY ORDERS.orderkey, ORDERS.orderdate, ORDERS.shippriority;
+create view q3 (
+    l_orderkey,
+    revenue,
+    o_orderdate,
+    o_shippriority
+) as
+select
+    l_orderkey,
+    sum(l_extendedprice * (1 - l_discount)) as revenue,
+    o_orderdate,
+    o_shippriority
+from
+    customer,
+    orders,
+    lineitem
+where
+    c_mktsegment = 'FURNITURE'
+    and c_custkey = o_custkey
+    and l_orderkey = o_orderkey
+    and o_orderdate < date '1995-03-29'
+    and l_shipdate > date '1995-03-29'
+group by
+    l_orderkey,
+    o_orderdate,
+    o_shippriority
+order by
+    revenue desc,
+    o_orderdate
+LIMIT 10;

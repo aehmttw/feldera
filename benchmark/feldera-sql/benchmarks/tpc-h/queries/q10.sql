@@ -1,19 +1,42 @@
--- Unsupported features for this query
---   INTERVAL (inlined into constant)
---   ORDER BY (ignored)
-
-CREATE VIEW q10 AS SELECT  c.custkey, c.name, 
-        c.acctbal,
-        n.name AS name2,
-        c.address,
-        c.phone,
-        c.comment,
-        SUM(l.extendedprice * (1 - l.discount)) AS revenue
-FROM    customer c, orders o, lineitem l, nation n
-WHERE   c.custkey = o.custkey
-  AND   l.orderkey = o.orderkey
-  AND   o.orderdate >= DATE('1993-10-01')
-  AND   o.orderdate < DATE('1994-01-01')
-  AND   l.returnflag = 'R'
-  AND   c.nationkey = n.nationkey
-GROUP BY c.custkey, c.name, c.acctbal, c.phone, n.name, c.address, c.comment
+create view q10 (
+    c_custkey,
+    c_name,
+    revenue,
+    c_acctbal,
+    n_name,
+    c_address,
+    c_phone,
+    c_comment
+) as
+select
+    c_custkey,
+    c_name,
+    sum(l_extendedprice * (1 - l_discount)) as revenue,
+    c_acctbal,
+    n_name,
+    c_address,
+    c_phone,
+    c_comment
+from
+    customer,
+    orders,
+    lineitem,
+    nation
+where
+    c_custkey = o_custkey
+    and l_orderkey = o_orderkey
+    and o_orderdate >= date '1994-01-01'
+    and o_orderdate < date '1994-01-01' + interval '3' month
+    and l_returnflag = 'R'
+    and c_nationkey = n_nationkey
+group by
+    c_custkey,
+    c_name,
+    c_acctbal,
+    c_phone,
+    n_name,
+    c_address,
+    c_comment
+order by
+    revenue desc
+LIMIT 20;

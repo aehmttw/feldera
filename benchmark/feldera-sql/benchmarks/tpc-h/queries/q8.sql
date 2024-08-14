@@ -1,33 +1,41 @@
--- Unsupported features for this query
---   ORDER BY (ignored)
-
-/* We insert a LISTMAX to support incremental computation.  For this particular 
-   query, this is safe, because if total.volume == 0, then the numerator of the
-   division is also guaranteed to be 0. 
-
-    Note: the listmax was removed
-   */
-
-
-CREATE VIEW q8 AS SELECT  total.o_year,
-        (SUM(CASE total.name WHEN 'BRAZIL' THEN total.volume ELSE 0 END) / 
-         SUM(total.volume)) AS mkt_share
-FROM
-  (
-    SELECT n2.name,
-           DATE_PART(year, o.orderdate) AS o_year,
-           l.extendedprice * (1-l.discount) AS volume
-    FROM   part p, supplier s, lineitem l, orders o, customer c, nation n1,
-           nation n2, region r
-    WHERE  p.partkey = l.partkey
-      AND  s.suppkey = l.suppkey
-      AND  l.orderkey = o.orderkey
-      AND  o.custkey = c.custkey
-      AND  c.nationkey = n1.nationkey 
-      AND  n1.regionkey = r.regionkey 
-      AND  r.name = 'AMERICA'
-      AND  s.nationkey = n2.nationkey
-      AND  (o.orderdate BETWEEN DATE('1995-01-01') AND DATE('1996-12-31'))
-      AND  p.type = 'ECONOMY ANODIZED STEEL'
-  ) total
-GROUP BY total.o_year;
+create view q8 (
+    o_year,
+    mkt_share
+) as
+select
+    o_year,
+    sum(case
+        when nation = 'INDIA' then volume
+        else 0
+    end) / sum(volume) as mkt_share
+from
+    (
+        select
+            extract(year from o_orderdate) as o_year,
+            l_extendedprice * (1 - l_discount) as volume,
+            n2.n_name as nation
+        from
+            part,
+            supplier,
+            lineitem,
+            orders,
+            customer,
+            nation n1,
+            nation n2,
+            region
+        where
+            p_partkey = l_partkey
+            and s_suppkey = l_suppkey
+            and l_orderkey = o_orderkey
+            and o_custkey = c_custkey
+            and c_nationkey = n1.n_nationkey
+            and n1.n_regionkey = r_regionkey
+            and r_name = 'ASIA'
+            and s_nationkey = n2.n_nationkey
+            and o_orderdate between date '1995-01-01' and date '1996-12-31'
+            and p_type = 'PROMO BRUSHED COPPER'
+    ) as all_nations
+group by
+    o_year
+order by
+    o_year;

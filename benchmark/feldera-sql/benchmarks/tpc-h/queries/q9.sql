@@ -1,19 +1,37 @@
--- Unsupported features for this query
---   ORDER BY (ignored)
-
-CREATE VIEW q9 AS SELECT nation, o_year, SUM(amount) AS sum_profit 
-FROM (
-  SELECT n.name AS nation, 
-         EXTRACT(year from o.orderdate) AS o_year,
-         ((l.extendedprice * (1 - l.discount)) - (ps.supplycost * l.quantity))
-            AS amount
-  FROM   part p, supplier s, lineitem l, partsupp ps, orders o, nation n
-  WHERE  s.suppkey = l.suppkey
-    AND  ps.suppkey = l.suppkey 
-    AND  ps.partkey = l.partkey
-    AND  p.partkey = l.partkey
-    AND  o.orderkey = l.orderkey 
-    AND  s.nationkey = n.nationkey 
-    AND  (p.name LIKE '%green%')
-  ) AS profit 
-GROUP BY nation, o_year;
+create view q9 (
+    nation,
+    o_year,
+    sum_profit
+) as
+select
+    nation,
+    o_year,
+    sum(amount) as sum_profit
+from
+    (
+        select
+            n_name as nation,
+            extract(year from o_orderdate) as o_year,
+            l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity as amount
+        from
+            part,
+            supplier,
+            lineitem,
+            partsupp,
+            orders,
+            nation
+        where
+            s_suppkey = l_suppkey
+            and ps_suppkey = l_suppkey
+            and ps_partkey = l_partkey
+            and p_partkey = l_partkey
+            and o_orderkey = l_orderkey
+            and s_nationkey = n_nationkey
+            and p_name like '%yellow%'
+    ) as profit
+group by
+    nation,
+    o_year
+order by
+nation,
+    o_year desc;

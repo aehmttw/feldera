@@ -1,31 +1,54 @@
--- Unsupported features for this query
---   ORDER BY (ignored)
---   LIMIT    (ignored)
---   MIN      (replaced with equivalent query)
-
-CREATE VIEW q2 AS SELECT s.acctbal, n.name, p.partkey, p.mfgr, s.address, s.phone, 
-       s.comment
-FROM part p, supplier s, partsupp ps, nation n, region r
-WHERE p.partkey = ps.partkey
-  AND s.suppkey = ps.suppkey
-  AND p.size = 15
-  AND (p.type LIKE '%BRASS')
-  AND s.nationkey = n.nationkey 
-  AND n.regionkey = r.regionkey 
-  AND r.name = 'EUROPE'
-  AND (NOT EXISTS (SELECT 1
-                   FROM partsupp ps2, supplier s2, nation n2, region r2
-                   WHERE p.partkey = ps2.partkey
-                     AND s2.suppkey = ps2.suppkey
-                     AND s2.nationkey = n2.nationkey
-                     AND n2.regionkey = r2.regionkey
-                     AND r2.name = 'EUROPE'
-                     AND ps2.supplycost < ps.supplycost));
-
---  AND ps.supplycost = (SELECT MIN(ps2.supplycost)
---                       FROM partsupp ps2, supplier s2, nation n2, region r2
---                       WHERE p.partkey = ps2.partkey
---                         AND s2.suppkey = ps2.suppkey
---                         AND s2.nationkey = n2.nationkey
---                         AND n2.regionkey = r2.regionkey
---                         AND r2.name = 'EUROPE');
+create view q2 (
+    s_acctbal,
+    s_name,
+    n_name,
+    p_partkey,
+    p_mfgr,
+    s_address,
+    s_phone,
+    s_comment
+) as
+select
+    s_acctbal,
+    s_name,
+    n_name,
+    p_partkey,
+    p_mfgr,
+    s_address,
+    s_phone,
+    s_comment
+from
+    part,
+    supplier,
+    partsupp,
+    nation,
+    region
+where
+    p_partkey = ps_partkey
+    and s_suppkey = ps_suppkey
+    and p_size = 38
+    and p_type like '%TIN'
+    and s_nationkey = n_nationkey
+    and n_regionkey = r_regionkey
+    and r_name = 'MIDDLE EAST'
+    and ps_supplycost = (
+        select
+            min(ps_supplycost)
+        from
+            partsupp,
+            supplier,
+            nation,
+            region
+        where
+            p_partkey = ps_partkey
+            and s_suppkey = ps_suppkey
+            and s_nationkey = n_nationkey
+            and n_regionkey = r_regionkey
+            and r_name = 'MIDDLE EAST'
+    )
+order by
+    s_acctbal desc,
+    n_name,
+    s_name,
+    p_partkey
+LIMIT 100;

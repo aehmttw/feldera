@@ -1,19 +1,36 @@
--- Unsupported features for this query
---   INTERVAL (inlined into constant)
---   ORDER BY (ignored)
-
-CREATE VIEW q16 AS SELECT  p.brand,
-        p.type,
-        p.size,
-        COUNT(DISTINCT ps.suppkey) AS supplier_cnt
-FROM    partsupp ps, part p
-WHERE   p.partkey = ps.partkey
-  AND   p.brand <> 'Brand#45'
-  AND   (p.type NOT LIKE 'MEDIUM POLISHED%')
-  AND   (p.size IN (49, 14, 23, 45, 19, 3, 36, 9))
-  AND   (ps.suppkey NOT IN (
-          SELECT s.suppkey
-          FROM   supplier s
-          WHERE  s.comment LIKE '%Customer%Complaints%'
-        ))
-GROUP BY p.brand, p.type, p.size;
+create view q16 (
+    p_brand,
+    p_type,
+    p_size,
+    supplier_cnt
+) as
+select
+    p_brand,
+    p_type,
+    p_size,
+    count(distinct ps_suppkey) as supplier_cnt
+from
+    partsupp,
+    part
+where
+    p_partkey = ps_partkey
+    and p_brand <> 'Brand#45'
+    and p_type not like 'SMALL PLATED%'
+    and p_size in (19, 17, 16, 23, 10, 4, 38, 11)
+    and ps_suppkey not in (
+        select
+            s_suppkey
+        from
+            supplier
+        where
+            s_comment like '%Customer%Complaints%'
+    )
+group by
+    p_brand,
+    p_type,
+    p_size
+order by
+    supplier_cnt desc,
+    p_brand,
+    p_type,
+    p_size;

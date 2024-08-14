@@ -1,28 +1,34 @@
--- Unsupported features for this query
---   CREATE VIEW (replaced with nested query)
---   Predicate r1.total_revenue = MAX(r2.total_revenue) replaced by 
---      (NOT EXISTS (SELECT 1 ... WHERE r2.total_revenue > r1.total_revenue))
---   ORDER BY (ignored)
+-- using 1433771997 as a seed to the RNG
 
-/* We change the query to be more "incrementality friendly". In order to avoid
-   issues with floating points, we cast the keys to integers. */
+create view revenue0 (supplier_no, total_revenue) as
+    select
+        l_suppkey,
+        sum(l_extendedprice * (1 - l_discount))
+    from
+        lineitem
+    where
+        l_shipdate >= date '1993-01-01'
+        and l_shipdate < date '1993-01-01' + interval '3' month
+    group by
+        l_suppkey;
 
-CREATE VIEW q15 AS SELECT s.suppkey, s.name, s.address, s.phone, r1.total_revenue as total_revenue
-FROM supplier s, 
-     (SELECT l.suppkey AS supplier_no, 
-             SUM(l.extendedprice * (1 - l.discount)) AS total_revenue
-      FROM lineitem l
-      WHERE l.shipdate >= DATE('1996-01-01')
-        AND l.shipdate <  DATE('1996-04-01')
-      GROUP BY l.suppkey) AS r1
-WHERE 
-    s.suppkey = r1.supplier_no
-    AND (NOT EXISTS (SELECT 1
-                     FROM (SELECT l.suppkey, 
-                                  SUM(l.extendedprice * (1 - l.discount)) 
-                                        AS total_revenue
-                           FROM lineitem l
-                           WHERE l.shipdate >= DATE('1996-01-01')
-                             AND l.shipdate <  DATE('1996-04-01')
-                           GROUP BY l.suppkey) AS r2
-                     WHERE r2.total_revenue > r1.total_revenue) );
+
+create view q15 as select
+    s_suppkey,
+    s_name,
+    s_address,
+    s_phone,
+    total_revenue
+from
+    supplier,
+    revenue0
+where
+    s_suppkey = supplier_no
+    and total_revenue = (
+        select
+            max(total_revenue)
+        from
+            revenue0
+    )
+order by
+    s_suppkey;
